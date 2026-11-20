@@ -40,8 +40,7 @@ public class ventana extends JFrame {
         probarConexionBD("jdbc:sqlite:tienda.db", "", "");
 
         descuento calcularDescuento = precio -> (precio > 20000.0 ) ? precio * 0.15 : 0;
-
-
+        
         calcular.addActionListener(e ->{
             try{
             String producto = nombreProducto.getText().trim();
