@@ -1,4 +1,4 @@
-public class Producto {
+public abstract class Producto {
     private String nombre;
     private double precio;
 
@@ -6,6 +6,8 @@ public class Producto {
         this.precio = precio;
         this.nombre = nombre;
     }
+
+    public abstract String obtenerDetalleTipo();
 
     public double getPrecio() {
         return precio;

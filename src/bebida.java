@@ -3,4 +3,8 @@ public class bebida extends Producto{
         super(nombre, precio);
 
     }
+    @Override
+    public String obtenerDetalleTipo(){
+        return "Categoria: bebida";
+    }
 }

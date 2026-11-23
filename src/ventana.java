@@ -1,102 +1,91 @@
 import javax.swing.*;
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 public class ventana extends JFrame {
     private JTextField monto;
     private JTextField nombreProducto;
+    private JComboBox<String> tipoProducto;
     private JButton calcular;
-    private JTextArea mostar;
+    private JTextArea mostrar;
     private JPanel panel;
 
     public ventana () {
         setTitle("Calculadora producto");
-        setSize(500,400);
+        setSize(500, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JLabel nombre = new JLabel("Producto");
+        JLabel lblTipo = new JLabel("Tipo:");
+        tipoProducto = new JComboBox<>(new String[]{"Comida", "Bebida"}); // CAMBIO: Opciones de subclases
+        JLabel nombre = new JLabel("Producto:");
         nombreProducto = new JTextField(12);
-        JLabel etiqueta = new JLabel("monto");
+        JLabel etiqueta = new JLabel("Monto:");
         monto = new JTextField(12);
         calcular = new JButton("Calcular");
-        mostar = new JTextArea(10,36);
-        mostar.setEditable(false);
+        mostrar = new JTextArea(10, 36);
+        mostrar.setEditable(false);
 
         panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 12));
 
+        panel.add(lblTipo);
+        panel.add(tipoProducto);
         panel.add(etiqueta);
         panel.add(monto);
         panel.add(nombre);
         panel.add(nombreProducto);
         panel.add(calcular);
-        panel.add(mostar);
+        panel.add(mostrar);
 
 
         add(panel);
 
-        probarConexionBD("jdbc:sqlite:tienda.db", "", "");
-
-        descuento calcularDescuento = precio -> (precio > 20000.0 ) ? precio * 0.15 : 0;
-
-        calcular.addActionListener(e ->{
-            try{
-            String producto = nombreProducto.getText().trim();
-            double precio = Double.parseDouble(monto.getText().trim());
-
-            if(producto.isEmpty()){
-                JOptionPane.showMessageDialog(this, "Escribe el nombre del producto");
-                return;
-            }
-
-            Producto productos = new Producto(producto, precio);
-            double descuentoPorcentaje = calcularDescuento.aplicarDescuento(productos.getPrecio());
-            double valor =  productos.getPrecio() - descuentoPorcentaje ;
-
-                mostar.setForeground(Color.BLACK);
-                mostar.setText(
-                    "Producto: "+ productos.getNombre() +"\n"+
-                    "Descuento: "+ String.format("%.2f", descuentoPorcentaje) + "\n" +
-                    "Valor total: $" + String.format("%.2f", valor)
-            );
-
-
-            } catch (NumberFormatException excep){
-                JOptionPane.showMessageDialog(this, "ingrese un dato real");
-            }
-
-        });
-    }
-
-    private void probarConexionBD(String url, String usuario, String contrasenia) {
-        try {
-            if (url.contains("sqlite")) {
-                Class.forName("org.sqlite.JDBC");
-            } else if (url.contains("mysql")) {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-            }
-
-            // try-with-resources cierra automáticamente Connection y Statement
-            try (Connection conn = DriverManager.getConnection(url, usuario, contrasenia);
-                Statement stmt = conn.createStatement()) {
-
-                if (conn != null && !conn.isClosed()) {
-                    // Simulación de consulta simple ("SELECT 1")
-                    stmt.executeQuery("SELECT 1");
-
-                    mostar.setForeground(new Color(0, 128, 0)); // Verde oscuro (más legible que Color.GREEN)
-                    mostar.setText("Conexión exitosa a la base de datos local.");
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            mostar.setForeground(Color.RED);
-            mostar.setText("Fallo de conexión: No se encontró el Driver de la BD.\nDetalle: " + ex.getMessage());
-        } catch (SQLException ex) {
-            mostar.setForeground(Color.RED);
-            mostar.setText("Fallo de conexión con la base de datos.\nError SQL: " + ex.getMessage());
+        ConexionBD db = new ConexionBD();
+        String estadoBD = db.probarConexion("jdbc:sqlite:tienda.db", "", "");
+        if (estadoBD.startsWith("OK")) {
+            mostrar.setForeground(new Color(0, 128, 0));
+        } else {
+            mostrar.setForeground(Color.RED);
         }
+        mostrar.setText(estadoBD);
+
+        descuento calcularDescuento = precio -> (precio > 20000.0) ? precio * 0.15 : 0;
+
+        calcular.addActionListener(e -> {
+            try {
+                String nombreTexto = nombreProducto.getText().trim();
+                double precio = Double.parseDouble(monto.getText().trim());
+
+                if (nombreTexto.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Escribe el nombre del producto");
+                    return;
+                }
+                if (precio <= 0) {
+                    JOptionPane.showMessageDialog(this, "El monto debe ser mayor a 0");
+                    return;
+                }
+
+                Producto productoSeleccionado;
+                if (tipoProducto.getSelectedItem().equals("Comida")) {
+                    productoSeleccionado = new comida(nombreTexto, precio);
+                } else {
+                    productoSeleccionado = new bebida(nombreTexto, precio);
+                }
+
+                double descuentoAplicado = calcularDescuento.aplicarDescuento(productoSeleccionado.getPrecio());
+                double valorFinal = productoSeleccionado.getPrecio() - descuentoAplicado;
+
+                mostrar.setForeground(Color.BLACK);
+                mostrar.setText(
+                        "Producto: " + productoSeleccionado.getNombre() + "\n" +
+                                productoSeleccionado.obtenerDetalleTipo() + "\n" + // Llamada polimórfica
+                                "Descuento: $" + String.format("%.2f", descuentoAplicado) + "\n" +
+                                "Valor total: $" + String.format("%.2f", valorFinal)
+                );
+
+            } catch (NumberFormatException excep) {
+                JOptionPane.showMessageDialog(this, "Ingrese un dato numérico válido en el monto");
+            }
+        });
+
     }
 
 }
