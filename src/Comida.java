@@ -1,5 +1,5 @@
-public class comida extends Producto{
-    public comida(String nombre, double precio){
+public class Comida extends Producto{
+    public Comida(String nombre, double precio){
         super(nombre,precio);
     }
 

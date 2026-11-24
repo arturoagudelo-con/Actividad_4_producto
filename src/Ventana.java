@@ -1,6 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-public class ventana extends JFrame {
+public class Ventana extends JFrame {
     private JTextField monto;
     private JTextField nombreProducto;
     private JComboBox<String> tipoProducto;
@@ -8,7 +8,7 @@ public class ventana extends JFrame {
     private JTextArea mostrar;
     private JPanel panel;
 
-    public ventana () {
+    public Ventana() {
         setTitle("Calculadora producto");
         setSize(500, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -47,7 +47,7 @@ public class ventana extends JFrame {
         }
         mostrar.setText(estadoBD);
 
-        descuento calcularDescuento = precio -> (precio > 20000.0) ? precio * 0.15 : 0;
+        Descuento calcularDescuento = precio -> (precio > 20000.0) ? precio * 0.15 : 0;
 
         calcular.addActionListener(e -> {
             try {
@@ -65,9 +65,9 @@ public class ventana extends JFrame {
 
                 Producto productoSeleccionado;
                 if (tipoProducto.getSelectedItem().equals("Comida")) {
-                    productoSeleccionado = new comida(nombreTexto, precio);
+                    productoSeleccionado = new Comida(nombreTexto, precio);
                 } else {
-                    productoSeleccionado = new bebida(nombreTexto, precio);
+                    productoSeleccionado = new Bebida(nombreTexto, precio);
                 }
 
                 double descuentoAplicado = calcularDescuento.aplicarDescuento(productoSeleccionado.getPrecio());

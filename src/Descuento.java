@@ -1,4 +1,4 @@
 @FunctionalInterface
-public interface descuento {
+public interface Descuento {
     double aplicarDescuento(double desc);
 }

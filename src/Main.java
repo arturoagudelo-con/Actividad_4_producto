@@ -3,7 +3,7 @@ import javax.swing.*;
 public class Main {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(()->{
-            ventana objeto = new ventana();
+            Ventana objeto = new Ventana();
             objeto.setVisible(true);
         });
     }
